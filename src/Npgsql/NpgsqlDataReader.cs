@@ -834,6 +834,8 @@ namespace Npgsql
         public override long GetBytes(int ordinal, long dataOffset, [CanBeNull] byte[] buffer, int bufferOffset, int length)
         {
             CheckRowAndOrdinal(ordinal);
+            if (Connector.IsCrateDB)
+                throw new InvalidOperationException("GetBytes(int, long, byte[], int, int) not supported when connected to CrateDB. Use the GetBytes extension method from the CrateDB-Plugin instead.");
             if (dataOffset < 0 || dataOffset > int.MaxValue)
                 throw new ArgumentOutOfRangeException(nameof(dataOffset), dataOffset, $"dataOffset must be between {0} and {int.MaxValue}");
             if (buffer != null && (bufferOffset < 0 || bufferOffset >= buffer.Length))
