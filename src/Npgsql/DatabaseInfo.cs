@@ -11,6 +11,7 @@ using JetBrains.Annotations;
 using Npgsql.Logging;
 using Npgsql.PostgresTypes;
 using NpgsqlTypes;
+using Npgsql.TypeMapping;
 
 namespace Npgsql
 {
@@ -43,7 +44,9 @@ namespace Npgsql
 
         static readonly NpgsqlLogger Log = NpgsqlLogManager.GetCurrentClassLogger();
 
-        DatabaseInfo(string host, int port, string databaseName)
+        static readonly DatabaseInfoFactory Factory = new DatabaseInfoFactory();
+
+        internal DatabaseInfo(string host, int port, string databaseName)
         {
             Host = host;
             Port = port;
@@ -58,8 +61,7 @@ namespace Npgsql
 
         internal static async Task<DatabaseInfo> Load(NpgsqlConnector connector, NpgsqlTimeout timeout, bool async)
         {
-            var csb = new NpgsqlConnectionStringBuilder(connector.ConnectionString);
-            var db = new DatabaseInfo(csb.Host, csb.Port, csb.Database);
+            var db = Factory.FromConnectionString(connector.ConnectionString);
             await db.LoadBackendTypes(connector, timeout, async);
             return db;
         }
@@ -102,61 +104,7 @@ WHERE
 ORDER BY ord";
         }
 
-        static readonly string CrateTypesQueryForBaseTypes = GenerateCrateTypesQuery(true);
-        static readonly string CrateTypesQueryForArrayTypes = GenerateCrateTypesQuery(false);
-
-        static string GenerateCrateTypesQuery(bool forBaseTypes)
-        {
-            return
-$@"select 
-    'pg_catalog' as nspname, typname, oid, 0 as typrelid, 0 as typbasetype, 
-    '{(forBaseTypes ? "b" : "a")}' as type, 
-    {(forBaseTypes ? "0" : "typelem")} as elemoid
-from
-    pg_catalog.pg_type
-where
-    {(forBaseTypes ? "" : "not ")}typelem = 0";
-        }
-
-        async Task LoadBackendTypes(NpgsqlConnector connector, NpgsqlTimeout timeout, bool async)
-        {
-            if (connector.IsCrateDB)
-            {
-                await LoadCrateDbBackendTypes(connector, timeout, async);
-            }
-            else
-            {
-                var commandTimeout = 0;  // Default to infinity
-                if (timeout.IsSet)
-                {
-                    commandTimeout = (int)timeout.TimeLeft.TotalSeconds;
-                    if (commandTimeout <= 0)
-                        throw new TimeoutException();
-                }
-
-                using (var command = new NpgsqlCommand(connector.SupportsRangeTypes ? TypesQueryWithRange : TypesQueryWithoutRange, connector.Connection))
-                {
-                    command.CommandTimeout = commandTimeout;
-                    command.AllResultTypesAreUnknown = true;
-                    using (var reader = async ? await command.ExecuteReaderAsync() : command.ExecuteReader())
-                    {
-                        while (async ? await reader.ReadAsync() : reader.Read())
-                        {
-                            timeout.Check();
-                            LoadBackendType(reader, connector);
-                        }
-                    }
-                }
-            }
-        }
-
-        async Task LoadCrateDbBackendTypes(NpgsqlConnector connector, NpgsqlTimeout timeout, bool async)
-        {
-            await LoadBackendTypes(connector, timeout, async, CrateTypesQueryForBaseTypes);
-            await LoadBackendTypes(connector, timeout, async, CrateTypesQueryForArrayTypes);
-        }
-
-        async Task LoadBackendTypes(NpgsqlConnector connector, NpgsqlTimeout timeout, bool async, string typesQuery)
+        protected virtual async Task LoadBackendTypes(NpgsqlConnector connector, NpgsqlTimeout timeout, bool async)
         {
             var commandTimeout = 0;  // Default to infinity
             if (timeout.IsSet)
@@ -166,7 +114,7 @@ where
                     throw new TimeoutException();
             }
 
-            using (var command = new NpgsqlCommand(typesQuery, connector.Connection))
+            using (var command = new NpgsqlCommand(connector.SupportsRangeTypes ? TypesQueryWithRange : TypesQueryWithoutRange, connector.Connection))
             {
                 command.CommandTimeout = commandTimeout;
                 command.AllResultTypesAreUnknown = true;
@@ -181,7 +129,7 @@ where
             }
         }
 
-        void LoadBackendType(DbDataReader reader, NpgsqlConnector connector)
+        protected void LoadBackendType(DbDataReader reader, NpgsqlConnector connector)
         {
             var ns = reader.GetString(reader.GetOrdinal("nspname"));
             var name = reader.GetString(reader.GetOrdinal("typname"));
@@ -383,6 +331,24 @@ WHERE a.typtype = 'b' AND b.typname = @name{(withSchema ? " AND ns.nspname = @sc
                 ? null
                 : pgType;
 
+        }
+
+        /// <summary>
+        /// Allow inherited classes to add type mappings for a specific PostgreSQL-like database. (like CrateDB)
+        /// </summary>
+        internal virtual void AddVendorSpecificTypeMappings(INpgsqlTypeMapper mapper) { }
+    }
+
+    class DatabaseInfoFactory
+    {
+        public DatabaseInfo FromConnectionString(string connectionString)
+        {
+            var csb = new NpgsqlConnectionStringBuilder(connectionString);
+
+            if (csb.ServerCompatibilityMode == ServerCompatibilityMode.CrateDB)
+                return new Compatibility.CrateDB.CrateDBDatabaseInfo(csb.Host, csb.Port, csb.Database);
+
+            return new DatabaseInfo(csb.Host, csb.Port, csb.Database);
         }
     }
 }

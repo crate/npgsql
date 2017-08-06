@@ -1,12 +1,30 @@
-Npgsql - .NET Data Provider for PostgreSQL
+Npgsql for CrateDB
 =============
 
-[![Stable nuget](https://img.shields.io/nuget/v/Npgsql.svg?label=stable%20nuget)](https://www.nuget.org/packages/Npgsql/)
-![Unstable nuget](https://img.shields.io/myget/npgsql-unstable/v/npgsql.svg?label=unstable%20nuget)
-[![Build Status](https://img.shields.io/teamcity/http/build.npgsql.org/s/npgsql_CompileReleaseAndPush.svg?label=TeamCity)](http://build.npgsql.org/viewType.html?buildTypeId=npgsql_CompileReleaseAndPush&guest=1) [![Join the chat at https://gitter.im/npgsql/npsgl](https://img.shields.io/badge/GITTER-JOIN%20CHAT-brightgreen.svg)](https://gitter.im/npgsql/npgsql)
+### What Is Npgsql for CrateDB?
 
-### What Is Npgsql?
+Npgsql for CrateDB is a fork of the Npgsql project containing the necessary changes to use Npgsql as a .NET data provider for [CrateDB](https://crate.io/overview/). It allows you to connect and interact with CrateDB using .NET.
 
-Npgsql is a .NET data provider for PostgreSQL. It allows you to connect and interact with PostgreSQL server using .NET.
+We are working to get these changes merged upstream. 
 
-For any additional information, please visit the Npgsql website at [http://www.npgsql.org](http://www.npgsql.org).
+It is important to understand, that although CrateDB [contains support for the PostgreSQL wire protocol](https://crate.io/docs/crate/reference/protocols/postgres.html), it is not a PostgreSQL clone and therefore it only supports a subset of PostgreSQLs features and data types.
+
+### Server Compatibility Mode
+
+The adaptions that are necessary to use Npgsql to connect and interact with CrateDB are activated by setting the `Server Compatibility Mode` to *CrateDB* in the connection string.
+
+```c#
+var conn = new NpgsqlConnection("Server=localhost;Server Compatibility Mode=CrateDB");
+conn.Open();
+...
+```
+
+This disables some unsupported features, adapts metadata queries and adds additional type mappings.
+
+
+
+For information about CrateDB, please visit the Crate website at https://crate.io.
+
+For information about Npgsql, please visit the Npgsql website at [http://www.npgsql.org](http://www.npgsql.org).
+
+
