@@ -28,6 +28,7 @@ using System.Data.Common;
 using System.Runtime.InteropServices.ComTypes;
 using System.Threading.Tasks;
 using Npgsql.PostgresTypes;
+using Npgsql.TypeMapping;
 
 namespace Npgsql
 {
@@ -203,7 +204,12 @@ namespace Npgsql
         /// Provides all PostgreSQL types detected in this database.
         /// </summary>
         /// <returns></returns>
-        protected abstract IEnumerable<PostgresType> GetTypes();
+        protected abstract IEnumerable<PostgresType> GetTypes();        
+        /// <summary>
+        /// Adapts the type mappings for this database.
+        /// </summary>
+        /// <param name="mappings">The mappings that are about the be bound.</param>
+        internal protected virtual void AdaptTypeMappings(IDictionary<string, NpgsqlTypeMapping> mappings) { }
 
         #endregion Types
 
