@@ -213,7 +213,6 @@ namespace Npgsql.TypeMapping
                 globalMapper.Lock.ExitReadLock();
             }
             ChangeCounter = GlobalTypeMapper.Instance.ChangeCounter;
-            DatabaseInfo?.AdaptTypeMappings(Mappings);
         }
 
         void ClearBindings()
@@ -242,12 +241,14 @@ namespace Npgsql.TypeMapping
         internal void Bind(NpgsqlDatabaseInfo databaseInfo)
         {
             DatabaseInfo = databaseInfo;
-            DatabaseInfo?.AdaptTypeMappings(Mappings);
             BindTypes();
         }
 
         void BindTypes()
         {
+            // Prepare the registered type mappings for the DBMS currently in use.
+            DatabaseInfo?.AdaptTypeMappings(Mappings);
+
             foreach (var mapping in Mappings.Values)
                 BindType(mapping, _connector, false);
 
