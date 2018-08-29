@@ -275,5 +275,61 @@ namespace Npgsql
         }
 
         #endregion Factory management
+
+        #region GAC plugin support
+        /// <summary>
+        /// Checks if the assembly is loaded from the global assembly cache and loads globally installed database info factories if this is the case.
+        /// </summary>
+        static NpgsqlDatabaseInfo()
+        {
+            if (typeof(NpgsqlDatabaseInfo).Assembly.GlobalAssemblyCache)
+            {
+                LoadRegisteredFactories();
+            }
+        }
+
+        /// <summary>
+        /// Reads metadata about globally registered database info factories and tries to load and register those types.
+        /// </summary>
+        /// <remarks>
+        /// This is only intended for the GAC use case. Applications like Microsoft Power BI have support
+        /// for Npgsql by loading it from the GAC. But there is no way to register custom database info factories
+        /// in that scenario. To overcome this problem, custom database info factories may be installed and 
+        /// registered globally and this method processes that registry accordingly by trying to load and register each type.
+        /// </remarks>
+        internal static void LoadRegisteredFactories()
+        {
+            foreach (var typeName in ReadFactoryRegistry())
+            {
+                TryRegisterFactoryByAssemblyQualifiedName(typeName);
+            }
+        }
+
+        static bool TryRegisterFactoryByAssemblyQualifiedName(string s)
+        {
+            if (!string.IsNullOrWhiteSpace(s))
+            {
+                try
+                {
+                    var factoryType = Type.GetType(s);
+                    if (typeof(INpgsqlDatabaseInfoFactory).IsAssignableFrom(factoryType))
+                    {
+                        if (Activator.CreateInstance(factoryType) is INpgsqlDatabaseInfoFactory factory)
+                        {
+                            NpgsqlDatabaseInfo.RegisterFactory(factory);
+                            return true;
+                        }
+                    }
+                }
+                catch { }
+            }
+            return false;
+        }
+
+        static IEnumerable<string> ReadFactoryRegistry()
+        {
+            return new string[] { "Npgsql.CrateDb.CrateDbDatabaseInfoFactory, Npgsql.CrateDb, Version=1.1.0.0, Culture=neutral, PublicKeyToken=090ed0a0a9362df6" };
+        }
+        #endregion
     }
 }
