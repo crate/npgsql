@@ -299,9 +299,9 @@ namespace Npgsql
         /// </remarks>
         internal static void LoadRegisteredFactories()
         {
-            foreach (var typeName in ReadFactoryRegistry())
+            foreach (var factoryMetadata in NpgsqlGlobalConfiguration.Current.DatabaseInfoFactories)
             {
-                TryRegisterFactoryByAssemblyQualifiedName(typeName);
+                TryRegisterFactoryByAssemblyQualifiedName(factoryMetadata.TypeName);
             }
         }
 
@@ -324,11 +324,6 @@ namespace Npgsql
                 catch { }
             }
             return false;
-        }
-
-        static IEnumerable<string> ReadFactoryRegistry()
-        {
-            return new string[] { "Npgsql.CrateDb.CrateDbDatabaseInfoFactory, Npgsql.CrateDb, Version=1.1.0.0, Culture=neutral, PublicKeyToken=090ed0a0a9362df6" };
         }
         #endregion
     }
