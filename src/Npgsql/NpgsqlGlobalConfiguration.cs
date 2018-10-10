@@ -36,6 +36,9 @@ namespace Npgsql
     /// </summary>
     internal class NpgsqlGlobalConfiguration
     {
+        const string NPGSQL_CONFIG_RELATIVEPATH = "Npgsql\\Npgsql_machine.config";
+        const string NPGSQL_CONFIG_DBINFOFACTORIES = "databaseinfofactories";
+
         static NpgsqlGlobalConfiguration current;
         /// <summary>
         /// Returns a reference to the current NpgsqlGlobalConfiguration instance.
@@ -66,7 +69,7 @@ namespace Npgsql
         /// <summary>
         /// Returns the path of the configuration file.
         /// </summary>
-        string ConfigFilePath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Npgsql\\Npgsql_machine.config");
+        string ConfigFilePath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), NPGSQL_CONFIG_RELATIVEPATH);
         /// <summary>
         /// Determines whether the configuration file exists.
         /// </summary>
@@ -91,7 +94,7 @@ namespace Npgsql
                 {
                     while(reader.Read())
                     {
-                        if (reader.IsStartElement("databaseinfofactories"))
+                        if (reader.IsStartElement(NPGSQL_CONFIG_DBINFOFACTORIES))
                         {
                             LoadRegisteredDatabaseInfoFactories(reader.ReadSubtree());
                         }
