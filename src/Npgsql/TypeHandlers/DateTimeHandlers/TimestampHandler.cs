@@ -28,10 +28,12 @@ using System.Data;
 using Npgsql.TypeHandling;
 using Npgsql.TypeMapping;
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+
 namespace Npgsql.TypeHandlers.DateTimeHandlers
 {
     [TypeMapping("timestamp", NpgsqlDbType.Timestamp, new[] { DbType.DateTime, DbType.DateTime2 }, new[] { typeof(NpgsqlDateTime), typeof(DateTime) }, DbType.DateTime)]
-    class TimestampHandlerFactory : NpgsqlTypeHandlerFactory<DateTime>
+    public class TimestampHandlerFactory : NpgsqlTypeHandlerFactory<DateTime>
     {
         // Check for the legacy floating point timestamps feature
         protected override NpgsqlTypeHandler<DateTime> Create(NpgsqlConnection conn)
