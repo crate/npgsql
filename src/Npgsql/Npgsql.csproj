@@ -23,7 +23,7 @@
     <Deterministic>true</Deterministic>
     <!-- This is somehow important for Microsoft.CodeQuality.Analyzers -->
     <Features>IOperation</Features>
-    <Version>1.0.0.0</Version>
+    <Version>1.0.1.0</Version>
     <PackageId>Npgsql.CrateFork</PackageId>
   </PropertyGroup>
 
