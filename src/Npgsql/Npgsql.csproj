@@ -1,11 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Description>Npgsql is the open source .NET data provider for PostgreSQL.</Description>
-    <Authors>Shay Rojansky;Emil Lenngren;Francisco Figueiredo Jr.;Kenji Uno</Authors>
+    <Description>Npgsql is the open source .NET data provider for PostgreSQL and CrateDB.</Description>
+    <Authors>Shay Rojansky;Emil Lenngren;Francisco Figueiredo Jr.;Kenji Uno;Andreas Pircher;Michael Beer</Authors>
     <Copyright>Copyright 2018 © The Npgsql Development Team</Copyright>
-    <Company>Npgsql</Company>
-    <PackageTags>npgsql postgresql postgres ado ado.net database sql</PackageTags>
+    <Company>Crate.io</Company>
+    <PackageTags>npgsql postgresql postgres ado ado.net database sql cratedb</PackageTags>
     <VersionPrefix>4.0.3</VersionPrefix>
     <LangVersion>latest</LangVersion>
     <TargetFrameworks>net45;net451;netstandard2.0</TargetFrameworks>
@@ -15,14 +15,16 @@
     <AssemblyOriginatorKeyFile>../../Npgsql.snk</AssemblyOriginatorKeyFile>
     <SignAssembly>true</SignAssembly>
     <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
-    <PackageProjectUrl>http://www.npgsql.org</PackageProjectUrl>
-    <PackageIconUrl>http://www.npgsql.org/img/postgresql.gif</PackageIconUrl>
+    <PackageProjectUrl>https://github.com/crate/npgsql</PackageProjectUrl>
+    <PackageIconUrl>https://crate.io/wp-content/uploads/2017/11/favicon.png</PackageIconUrl>
     <PackageLicenseUrl>https://raw.githubusercontent.com/npgsql/npgsql/master/LICENSE.txt</PackageLicenseUrl>
     <RepositoryType>git</RepositoryType>
-    <RepositoryUrl>git://github.com/npgsql/npgsql</RepositoryUrl>
+    <RepositoryUrl>git://github.com/crate/npgsql</RepositoryUrl>
     <Deterministic>true</Deterministic>
     <!-- This is somehow important for Microsoft.CodeQuality.Analyzers -->
     <Features>IOperation</Features>
+    <Version>1.0.0.0</Version>
+    <PackageId>Npgsql.CrateFork</PackageId>
   </PropertyGroup>
 
   <ItemGroup>
